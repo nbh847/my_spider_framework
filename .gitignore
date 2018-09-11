@@ -1,0 +1,10 @@
+*.pyc
+*cache
+.DS_Store
+.test/
+.idea/
+*.rdb
+*.log
+temp/
+tes*
+
