@@ -18,17 +18,17 @@ parser = reqparse.RequestParser()
 parser.add_argument('ip', type=str, default="", help="可用IP")
 
 
-# 从IP池获取IP
+# 路由指向的函数
 class GetIpFromPool(Resource):
     def get(self):
-        # 获取一个IP
+        # get 请求
         result = Handler().get_all_ip()
         if result['result'] is 1:
             return result, FAILED_CODE
         return result, SUCCESS_CODE
 
     def post(self):
-        # 删除IP
+        # post 请求
         pass
 
 
@@ -43,7 +43,7 @@ class Handler(object):
 
     def get_all_ip(self):
         '''
-        获取IP池里所有的IP
+        逻辑处理函数
         '''
         return_dic = {}
         return_dic['msg'] = "获取 全部IP 出错: {}。"
