@@ -1,4 +1,4 @@
-from config.logger_setter import get_logger
+from log_module import get_logger
 from setting_module import *
 
 from flask import Flask
