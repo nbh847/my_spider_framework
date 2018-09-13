@@ -67,3 +67,6 @@ FIREFOXDRIVER_PATH = '/usr/local/bin/geckodriver'
 
 # webdriver 的每次行动后的间隔时间
 WEBDRIVER_DELAY_TIME = 2
+
+# es 地址
+ES_ADDRESS = 'http://******'
