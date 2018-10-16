@@ -39,6 +39,8 @@ PURCHASED_IP_PROCESS = True
 
 # -----------------request config-----------------
 USER_AGENT = '*****'
+TMALL_REFERER = '*****'
+
 # 重试次数
 RETRY_TIMES = 6
 
