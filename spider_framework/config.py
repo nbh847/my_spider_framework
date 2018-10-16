@@ -4,3 +4,11 @@
 USER_AGENT = ''
 SAVE_LOG_DEBUG_LEVEL = 'debug'
 MY_DEBUG_LEVEL = 'debug'
+
+# MYSQL config
+MYSQL_DB_NAME = ''
+MYSQL_HOST = ''
+MYSQL_PORT = 0
+MYSQL_USER = ''
+MYSQL_PASSWORD = ''
+MYSQL_CHARSET = 'utf8mb4'
