@@ -112,3 +112,29 @@ class Utility:
         if s is None:
             return ''
         return str(s)
+
+    def get_ip_from_pool(self):
+        '''
+        从IP池获取IP，没有IP则返回空str
+        :return:
+        '''
+        ip = requests.get('http://10.0.5.58:7901/ip', timeout=30)
+        if ip.status_code == 200:
+            proxy_ip = json.loads(ip.text)['data']['ip']
+            self.logger.info("获取了IP: {}".format(proxy_ip))
+            return proxy_ip
+        else:
+            msg = json.loads(ip.text)['msg']
+            self.logger.info('获取ip失败, 原因：{}'.format(msg))
+            return ''
+
+    def delete_ip_from_pool(self, ip):
+        '''
+        从IP池删除IP
+        '''
+        req = requests.post('http://10.0.5.58:7901/ip?confirm=2&ip={}'.format(ip), timeout=30)
+        if req.status_code == 200:
+            self.logger.info('删除ip: {}成功'.format(ip))
+        else:
+            msg = json.loads(req.text)['msg']
+            self.logger.info('删除ip: {}失败, 原因：{}'.format(ip, msg))
