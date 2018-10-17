@@ -105,6 +105,25 @@ class Utility:
             s.close()
             return ip
 
+    def is_alive(self, ip):
+        '''
+        判断ip是否有效
+        '''
+        test_url = 'http://www.baidu.com/'
+        proxy = {'http': "http://" + ip, 'https': "http://" + ip}
+        try:
+            req = requests.get(test_url, timeout=30, proxies=proxy)
+            if req.status_code == 200:
+                self.logger.info("status code: {}, ip: {} 可用".format(req.status_code, ip))
+                return True
+            else:
+                self.logger.info("status code: {}, ip: {} 不可用".format(req.status_code, ip))
+                return False
+        except Exception as e:
+            self.logger.info('bad ip %s' % ip)
+            self.logger.warning('错误详情：{}'.format(e))
+            return False
+
     def xstr(self, s):
         '''
         用来把 s 转为字符串，如果 s 为0， 则返回 ''
