@@ -13,14 +13,8 @@ class DBOperation:
     def operate_data(self, data, operation='', table_name='', index='', type='mysql'):
         if type == 'mysql':
             if table_name:
-                if operation == 'insert':
-                    self._insert_to_db(data, table_name)
-                elif operation == 'get':
-                    self._get_data_from_db(data, table_name)
-                elif operation == 'delete':
-                    self._delete_data_from_db(data, table_name)
-                elif operation == 'update':
-                    self._update_data_from_db(data, table_name)
+                if operation:
+                    self._operate_from_db(operation, data, table_name)
                 else:
                     self.logger.warning('请输入正确的operation')
             else:
@@ -40,7 +34,7 @@ class DBOperation:
         else:
             self.logger.warning('输入的数据库类型type: {} 不对，请重新输入.'.format(type))
 
-    def _insert_to_db(self, data, table_name, retry=3):
+    def _operate_from_db(self, operation, data, table_name, retry=3):
         '''
         插入数据到数据库
         :param data: 被写入的数据
@@ -55,10 +49,15 @@ class DBOperation:
                 db_table.create_table()
 
             # 执行数据库操作
-            db_table.create(
-                xxx='xxx',
-                sss='sss',
-            )
+            if operation == 'insert':
+                db_table.create(**data)
+            elif operation == 'get':
+                xxx = db_table.select(*data).limit(1 * 2)
+                return xxx
+            elif operation == 'update':
+                db_table.update(**data).where(db_table.xxx == 'xxx').execute()
+            elif operation == 'delete':
+                db_table.delete().where(db_table.xxx == 'xxx').execute()
 
         except Exception as e:
             if str(e.args[0]) == '2013' or str(e.args[0]) == '2006' or str(e.args[0]) == '0':
@@ -71,107 +70,7 @@ class DBOperation:
                 self.logger.error('重连数据库')
                 db.close()
                 db.get_conn().ping(True)
-                return self._insert_to_db(data, table_name, retry=retry - 1)
-            else:
-                self.logger.warning('非数据库重连错误')
-                raise e
-
-    def _get_data_from_db(self, data, table_name, retry=3):
-        '''
-        从数据库获取数据
-        :param data: 被写入的数据
-        :param table_name: 数据库表名
-        :param retry: 重试次数
-        :return: None
-        '''
-        db_table = locals()[table_name]
-        try:
-            # 查看建表信息，没有则新建表
-            if not db_table.table_exists():
-                db_table.create_table()
-
-            # 执行数据库操作
-            xxx = db_table.select().limit(1 * 2)
-            return xxx
-
-        except Exception as e:
-            if str(e.args[0]) == '2013' or str(e.args[0]) == '2006' or str(e.args[0]) == '0':
-                self.logger.info("重试次数还剩:{}次".format(retry))
-                if retry < 1:
-                    self.logger.warning('数据库重连次数到达{}次，退出。'.format(retry))
-                    return
-
-                self.logger.error('数据库已断开：{}'.format(e))
-                self.logger.error('重连数据库')
-                db.close()
-                db.get_conn().ping(True)
-                return self._insert_to_db(data, table_name, retry=retry - 1)
-            else:
-                self.logger.warning('非数据库重连错误')
-                raise e
-
-    def _delete_data_from_db(self, data, table_name, retry=3):
-        '''
-        从数据库删除数据
-        :param data: 要被删除的数据
-        :param table_name: 数据库表名
-        :param retry: 重试次数
-        :return: None
-        '''
-        db_table = locals()[table_name]
-        try:
-            # 查看建表信息，没有则新建表
-            if not db_table.table_exists():
-                db_table.create_table()
-
-            # 执行数据库操作
-            db_table.delete().where(db_table.xxx == 'xxx').execute()
-
-        except Exception as e:
-            if str(e.args[0]) == '2013' or str(e.args[0]) == '2006' or str(e.args[0]) == '0':
-                self.logger.info("重试次数还剩:{}次".format(retry))
-                if retry < 1:
-                    self.logger.warning('数据库重连次数到达{}次，退出。'.format(retry))
-                    return
-
-                self.logger.error('数据库已断开：{}'.format(e))
-                self.logger.error('重连数据库')
-                db.close()
-                db.get_conn().ping(True)
-                return self._insert_to_db(data, table_name, retry=retry - 1)
-            else:
-                self.logger.warning('非数据库重连错误')
-                raise e
-
-    def _update_data_from_db(self, data, table_name, retry=3):
-        '''
-        从数据库 更新 数据
-        :param data: 要被 更新 的数据
-        :param table_name: 数据库表名
-        :param retry: 重试次数
-        :return: None
-        '''
-        db_table = locals()[table_name]
-        try:
-            # 查看建表信息，没有则新建表
-            if not db_table.table_exists():
-                db_table.create_table()
-
-            # 执行数据库操作
-            db_table.update(off_shelf_status=True).where(db_table.xxx == 'xxx').execute()
-
-        except Exception as e:
-            if str(e.args[0]) == '2013' or str(e.args[0]) == '2006' or str(e.args[0]) == '0':
-                self.logger.info("重试次数还剩:{}次".format(retry))
-                if retry < 1:
-                    self.logger.warning('数据库重连次数到达{}次，退出。'.format(retry))
-                    return
-
-                self.logger.error('数据库已断开：{}'.format(e))
-                self.logger.error('重连数据库')
-                db.close()
-                db.get_conn().ping(True)
-                return self._insert_to_db(data, table_name, retry=retry - 1)
+                return self._operate_from_db(operation, data, table_name, retry=retry - 1)
             else:
                 self.logger.warning('非数据库重连错误')
                 raise e
