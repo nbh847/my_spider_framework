@@ -1,11 +1,19 @@
 from .log_module import get_logger, save_file_logger
 from .date import Date
 from ..config import *
+from date_module import Date
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.header import Header
 
 import requests
 import json
 import socket
+import smtplib
 import os
+import time
+import random
+import datetime
 
 
 class Utility:
@@ -157,3 +165,83 @@ class Utility:
         else:
             msg = json.loads(req.text)['msg']
             self.logger.info('删除ip: {}失败, 原因：{}'.format(ip, msg))
+
+    def send_email(self, warning_project):
+        '''
+        发送邮件模块, 可以带附件
+        '''
+
+        now = (datetime.datetime.now() - datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+        if warning_project:
+
+            self.logger.info("需要报警的项目：{}".format(warning_project))
+
+            # 发送邮件
+            my_sender = '***@qq.com'
+            my_pass = '****'
+            my_user_list = ['****@qq.com']
+
+            try:
+                # 创建带附件的实例
+                for user in my_user_list:
+                    message = MIMEMultipart()
+                    message['From'] = Header(my_sender, 'utf-8')
+                    message['To'] = Header(user, 'utf-8')
+                    subject = '{}的爬虫报警内容'.format(now)
+                    message['Subject'] = Header(subject, 'utf-8')
+
+                    # 邮件正文内容
+                    message.attach(MIMEText('{}在{}没有任何数据，请检查对应的项目。'.format(warning_project, now), 'plain', 'utf-8'))
+
+                    # 构造附件1，path路径下的文件
+                    # att1 = MIMEText(open(path, 'rb').read(), 'plain', 'utf-8')
+                    # att1["Content-Type"] = 'application/octet-stream'
+                    # # 这里的filename可以任意写，写什么名字，邮件中显示什么名字
+                    # att1["Content-Disposition"] = 'attachment; filename="redbook_title{}.xlsx"'.format(now)
+                    # message.attach(att1)
+
+                    # # 构造附件2，传送当前目录下的 runoob.txt 文件
+                    # att2 = MIMEText(open('runoob.txt', 'rb').read(), 'base64', 'utf-8')
+                    # att2["Content-Type"] = 'application/octet-stream'
+                    # att2["Content-Disposition"] = 'attachment; filename="runoob.txt"'
+                    # message.attach(att2)
+
+                    server = smtplib.SMTP_SSL('smtp.qq.com', 465)
+                    server.login(my_sender, my_pass)
+                    server.sendmail(my_sender, [user, ], message.as_string())
+                    self.logger.info("邮件发送成功")
+                    server.quit()
+                    time.sleep(random.randint(3, 6))
+            except Exception as e:
+                self.logger.exception("发送邮件错误详情：{}".format(e))
+
+        else:
+            self.logger.info("今天:{}没有需要报警的项目".format(now))
+
+    def send_to_dingding(self, warning_project, warning_data, inform_url="****"):
+
+        '''
+        发送钉钉通知模块
+        '''
+
+        now = (datetime.datetime.now() - datetime.timedelta(days=0)).strftime("%Y-%m-%d %H:%M:%S")
+        if warning_project:
+            data = {
+                "msgtype": "markdown",
+                "markdown": {
+                    "title": '{}有报警情况'.format(now),
+                    "text": "**{0}**\n"
+                            "\n**报警的项目：**{1}\n"
+                            "\n**报警的时间：**{2}\n"
+                            "\n**报警的原因以及处理：**{3}\n"
+                            "\n**报警的环境：**{4}".format('报警提示:', warning_project, now, warning_data, self.get_mechine())
+                }
+            }
+            try:
+                r = requests.post(inform_url, headers=self.headers, timeout=30, data=json.dumps(data))
+                self.logger.info(r.status_code)
+            except Exception as e:
+                self.logger.exception("发送到钉钉消息error:{}".format(e))
+                self.logger.warning("发送钉钉报警内容失败")
+        else:
+            self.logger.info("今天:{}没有需要报警的项目".format(now))
